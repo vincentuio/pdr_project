@@ -4,16 +4,18 @@ from src.structures.queue import Queue
 import src.functions.vector as vctr
 import pandas as pd
 import numpy as np
+import time
 
 class csv_import(threatStructure):
 
-    def __init__(self,outputQueue,filename):
+    def __init__(self,outputQueue,filename, realtime = False):
 
         super(csv_import, self).__init__()
         self.target = self.run
 
         self.outputQueue = outputQueue
         self.filename = filename
+        self.realtime = realtime
 
         self.column_names_gyro = ['gyroRotationX(rad/s)',
                                   'gyroRotationY(rad/s)',
@@ -29,8 +31,8 @@ class csv_import(threatStructure):
         df = pd.read_csv(self.filename, delimiter=',')
 
         # convert absolute time to relative time in ms
-        time = pd.to_datetime(df['loggingTime(txt)']).values.astype('datetime64[ms]')
-        time = (time - time[0]).astype(int)
+        time_array = pd.to_datetime(df['loggingTime(txt)']).values.astype('datetime64[ms]')
+        time_array = (time_array - time_array[0]).astype(int)
 
         # read in columns for gyro, acc and mag
         gyr = df[self.column_names_gyro].values
@@ -48,16 +50,16 @@ class csv_import(threatStructure):
 
         while self.active:
 
-            for kk in range(time.size):
+            for kk in range(time_array.size):
 
                 a = acc[kk]
                 g = gyr[kk]
                 m = mag[kk]
 
-                dp = dtp(time[kk], a, g, m)
+                dp = dtp(time_array[kk], a, g, m)
 
                 # last data point
-                if kk == time.size - 1:
+                if kk == time_array.size - 1:
                     a_final = window[a_i].a
                     g_final = window[g_i].g
                     m_final = window[m_i].m
@@ -123,6 +125,10 @@ class csv_import(threatStructure):
                     a_i -= min_i
                     g_i -= min_i
                     m_i -= min_i
+
+                # if realtime = true, wait before next datapoint
+                if (kk != 0) and self.realtime:
+                    time.sleep((time_array[kk]-time_array[kk-1]) / 1000)
 
     def run_without_nans(self):
 

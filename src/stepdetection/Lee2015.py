@@ -1,7 +1,7 @@
 from src.structures.queue import Queue
 from src.structures.thread import threatStructure
 import numpy as np
-
+import time
 
 class Lee2015(threatStructure):
     def __init__(self, inputQueue, outputQueue):
@@ -145,6 +145,8 @@ class Lee2015(threatStructure):
                         self.resetParams()
 
                     window.dequeue()
+            else:
+                time.sleep(0.05)
 
     def detectState(self, window):
         a_0 = window[0].a_norm_smooth

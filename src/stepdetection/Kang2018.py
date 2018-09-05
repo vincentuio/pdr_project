@@ -3,6 +3,7 @@ from src.structures.thread import threatStructure
 from scipy.optimize import minimize_scalar
 import numpy as np
 import math
+import time
 
 class Kang2018(threatStructure):
     def __init__(self, inputQueue, outputQueue):
@@ -36,6 +37,7 @@ class Kang2018(threatStructure):
         step_residual = 0
 
         while self.active:
+
             if len(self.inputQueue) != 0:
                 dtp = self.inputQueue.dequeue()
 
@@ -117,6 +119,8 @@ class Kang2018(threatStructure):
                         pop.g_norm = g_target[ii]
                         pop.g_norm_smooth = g_target[ii]
                         self.outputQueue.enqueue(pop)
+            else:
+                time.sleep(0.05)
 
     def fft(self,g_data):
         a = np.fft.fft(g_data) # * self.dt

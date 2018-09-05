@@ -2,6 +2,7 @@ from src.structures.queue import Queue
 from src.structures.thread import threatStructure
 from src.functions.rotation import *
 import src.functions.vector as vctr
+import time
 import numpy as np
 
 class orientation(threatStructure):
@@ -67,7 +68,8 @@ class orientation(threatStructure):
                     # append oldest point to output queue
                     pop = window.dequeue()
                     self.outputQueue.enqueue(pop)
-
+            else:
+                time.sleep(0.05)
 
     # fancy way of interpolating between multiple descrete points (not used)
     def average_rotation_old(self, window):

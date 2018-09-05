@@ -1,4 +1,5 @@
 import math
+import time
 from src.structures.thread import threatStructure
 
 class position2D(threatStructure):
@@ -34,4 +35,6 @@ class position2D(threatStructure):
                 dtp.position = [self.x, self.y, 0]
 
                 self.outputQueue.enqueue(dtp)
+            else:
+                time.sleep(0.05)
 

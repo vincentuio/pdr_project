@@ -10,7 +10,7 @@ class Brynes2016(threatStructure):
 
         self.inputQueue = inputQueue
         self.outputQueue = outputQueue
-        self.typ = max_diff
+        self.typ = 999 #max_diff
         self.windowSize = 5
         self.threshold = 0
         self.minNrOfPoints = 10

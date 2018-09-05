@@ -4,7 +4,7 @@ from src.structures.thread import threatStructure
 
 class dataImporter(threatStructure):
 
-    def __init__(self,outputQueue,filename):
+    def __init__(self,outputQueue,filename, realtime = True):
 
         super(dataImporter, self).__init__()
         self.target = self.run
@@ -13,9 +13,9 @@ class dataImporter(threatStructure):
         self.filename = filename
 
         if self.filename[-3:] == 'csv':
-            self.dataImport = csv_import(self.outputQueue,self.filename)
+            self.dataImport = csv_import(self.outputQueue,self.filename, realtime)
         else:
-            self.dataImport = json_import(self.outputQueue,self.filename)
+            self.dataImport = json_import(self.outputQueue,self.filename, realtime)
 
     def run(self):
         self.dataImport.start()

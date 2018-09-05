@@ -1,5 +1,6 @@
 from src.structures.queue import Queue
 from src.structures.thread import threatStructure
+import time
 
 class Deng2015(threatStructure):
     def __init__(self,inputQueue,outputQueue):
@@ -91,3 +92,6 @@ class Deng2015(threatStructure):
 
                     # remove oldest point from window
                     window.dequeue()
+            else:
+                time.sleep(0.05)
+

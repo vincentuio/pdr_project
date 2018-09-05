@@ -25,7 +25,7 @@ class Point3D:
         factor = fov / (viewer_distance + self.z)
         x = self.x * factor + win_width / 2
         y = -self.y * factor + win_height / 2
-        return Point3D(x, y, 1)
+        return Point3D(int(x), int(y), 1)
 
     def translate(self, tr):
         return Point3D(self.x + tr[0], self.y + tr[1], self.z + tr[2])
@@ -128,15 +128,18 @@ class simulator(threatStructure):
                     # update the window
                     self.screen.fill(self.background_colour)
 
-                    # print track of phone
+                    # print track + steps of phone
                     self.draw_trajectory()
 
                     # print phone
                     self.draw_phone(t)
 
-                    # short break
-                    time.sleep(0.05)
+                # append point to output queue
                 self.outputQueue.enqueue(dtp)
+
+            else:
+                time.sleep(0.05)
+
 
     def transform_vertices(self, q):
         t = []
@@ -158,6 +161,7 @@ class simulator(threatStructure):
                 pnt1 = self.track[ii - 1]
                 pnt2 = self.track[ii]
                 pygame.draw.line(self.screen, (255, 0, 0), (pnt1.x, pnt1.y), (pnt2.x, pnt2.y))
+                pygame.draw.circle(self.screen, (0, 0, 255), (pnt2.x, pnt2.y), 5)
         return
 
     def draw_phone(self, t):

@@ -6,18 +6,33 @@ from src.stepCounter import stepCounter
 from src.stepLength import stepLength
 from src.position2D import position2D
 from src.simulator import simulator
-from src.structures.queue import Queue
-import matplotlib.pyplot as plt
 
+from src.structures.queue import Queue
+from src.functions.plotting import create_plot
 
 class pedestrian_dead_reckoning:
 
-    def __init__(self, filename):
+    def __init__(self, filename, realtime = False):
 
         # user input
         self.filename = filename
-        self.algoType = 1 # 0 = Lee2015 1 = Deng2015 2 = Kang2018 (set freq to 20!) 3 = zerocrossing 4 = Brynes2016 (not working)
         self.sampling_frequency = 20 # type 'None' if frequency should be determined from first two points
+        self.realtime = realtime
+        self.algoType = 1
+        '''
+        0 = Lee2015 
+        1 = Deng2015 
+        2 = Kang2018 (set freq to 20!) 
+        3 = zerocrossing 
+        4 = Brynes2016 (not working)
+        '''
+        self.filterType = 'gaussian'
+        '''
+        moving_average
+        gaussian
+        hann
+        kaiser_bessel
+        '''
 
         # Internal queues for data flow
         self.inputQueue = Queue()
@@ -30,9 +45,9 @@ class pedestrian_dead_reckoning:
         self.simulationQueue = Queue()
 
     def initialize(self):
-        self.dataImporterer = dataImporter(self.inputQueue, self.filename)
+        self.dataImporterer = dataImporter(self.inputQueue, self.filename, self.realtime)
         self.preprocessor = preprocessor(self.inputQueue, self.preprocessQueue, samplingFreq=self.sampling_frequency)
-        self.smoothing_filter = smoothingFilter(self.preprocessQueue, self.smoothedQueue)
+        self.smoothing_filter = smoothingFilter(self.preprocessQueue, self.smoothedQueue, filterType=self.filterType)
         self.orientation = orientation(self.smoothedQueue, self.orientationQueue)
         self.step_counter = stepCounter(self.orientationQueue, self.stepCountQueue, self.algoType)
         self.step_length = stepLength(self.stepCountQueue, self.stepLengthQueue)
@@ -49,40 +64,21 @@ class pedestrian_dead_reckoning:
         self.position2D.start()
         self.simulation.start()
 
-        self.dataImporterer.dataImport.thread.join()
-        self.preprocessor.thread.join()
-        self.smoothing_filter.thread.join()
-        self.orientation.thread.join()
-        self.step_counter.stepcount_algorithm.thread.join()
-        self.step_length.thread.join()
-        self.position2D.thread.join()
-        self.simulation.thread.join()
+        self.dataImporterer.dataImport.join()
+        self.preprocessor.join()
+        self.smoothing_filter.join()
+        self.orientation.join()
+        self.step_counter.stepcount_algorithm.join()
+        self.step_length.join()
+        self.position2D.join()
+        self.simulation.join()
 
-# pdr = pedestrian_dead_reckoning('data/sonitor_dataset_2_hand/')
+#pdr = pedestrian_dead_reckoning('data/sonitor_dataset_5_hand_edited/')
 # pdr = pedestrian_dead_reckoning('data/bballfield_pocket.csv')
 # pdr = pedestrian_dead_reckoning('data/Calibration.csv')
-pdr = pedestrian_dead_reckoning('data/bballfield_hand.csv')
+pdr = pedestrian_dead_reckoning('data/bballfield_hand.csv', realtime = False)
 pdr.initialize()
 pdr.run()
 
-
-# plot data (green dots are steps)
-a_norm = []
-a_norm_smooth = []
-a_time = []
-step_a = []
-step_time = []
-for q in pdr.simulationQueue:
-    a_time.append(q.time)
-    a_norm.append(q.a_norm)
-    a_norm_smooth.append(q.a_norm_smooth)
-    if q.isStep:
-        step_a.append(q.a_norm_smooth)
-        step_time.append(q.time)
-
-fig, ax = plt.subplots(1, 1, figsize=(40, 10))
-plt.plot(a_time, a_norm)
-plt.plot(a_time, a_norm_smooth)
-plt.plot(step_time, step_a, 'o')
-plt.show()
-print('steps / datapoints:', len(step_time), len(a_time))
+# create plot of acc norm raw, acc norm smooth and steps
+create_plot(pdr)

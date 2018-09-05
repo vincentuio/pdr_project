@@ -7,11 +7,12 @@ import time
 
 import json
 import numpy as np
+import time
 
 
 class json_import(threatStructure):
 
-    def __init__(self, outputQueue,pathname):
+    def __init__(self, outputQueue,pathname, realtime):
         super(json_import, self).__init__()
 
         # external references
@@ -25,9 +26,9 @@ class json_import(threatStructure):
         self.sortedQueue = Queue()
 
         # internal objects
-        self.gyrReader = json_reader(self.path + 'motion_gyro.json', 'gyroData', self.gyrQueue)
-        self.accReader = json_reader(self.path + 'motion_accel.json', 'accelData', self.accQueue)
-        self.magReader = json_reader(self.path + 'motion_magnet.json', 'magneticData', self.magQueue)
+        self.gyrReader = json_reader(self.path + 'motion_gyro.json', 'gyroData', self.gyrQueue, realtime)
+        self.accReader = json_reader(self.path + 'motion_accel.json', 'accelData', self.accQueue, realtime)
+        self.magReader = json_reader(self.path + 'motion_magnet.json', 'magneticData', self.magQueue, realtime)
         self.dtpSorter = dtp_sorter(self.gyrQueue, self.accQueue, self.magQueue, self.sortedQueue)
         self.dtpInterpolator = dtp_interpolator(self.sortedQueue, self.outputQueue)
 
@@ -51,18 +52,20 @@ class json_import(threatStructure):
 
 class json_reader(threatStructure):
 
-    def __init__(self, filename, datatype, outputQueue):
+    def __init__(self, filename, datatype, outputQueue, realtime):
         super(json_reader, self).__init__()
         self.target = self.run
 
+        self.realtime = realtime
         self.outputQueue = outputQueue
         self.filename = open(filename)
         self.datatype = datatype
-        self.ii = 0
 
     def run(self):
 
         while self.active:
+
+            t0 = None
             for line in self.filename:
 
                 dataset = json.loads(line)['motion'][self.datatype]
@@ -79,6 +82,14 @@ class json_reader(threatStructure):
                         self.outputQueue.enqueue(dtp(t, a=np.array(m[1:])))
                     elif self.datatype == 'magneticData':
                         self.outputQueue.enqueue(dtp(t, m=np.array(m[1:])))
+
+                    # if realtime = true, wait before next datapoint
+                    if t0 is None:
+                        t0 = t
+                    elif self.realtime:
+                        time.sleep((t - t0) / 1000000)
+                        t0 = t
+
             self.outputQueue.enqueue('end')
             self.active = False
 
@@ -118,6 +129,7 @@ class dtp_sorter(threatStructure):
                     else:
                         current_times[ii] = dp.time
                         current_dtpts[ii] = dp
+
             # stop if all queues are done (stop counter reaches 0)
             if stop_counter == 0:
                 self.outputQueue.enqueue('end')

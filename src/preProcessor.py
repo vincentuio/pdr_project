@@ -4,6 +4,7 @@ from src.structures.datapoint import datapoint as dtp
 import src.functions.vector as vctr
 
 import math
+import time
 
 
 
@@ -82,6 +83,9 @@ class preprocessor(threatStructure):
                             interpolation_count += 1
                     # Pop oldest element
                     window.dequeue()
+            else:
+                time.sleep(0.05)
+
 
 
 def linearInterp(dp1, dp2, time):

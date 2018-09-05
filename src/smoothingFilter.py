@@ -2,6 +2,7 @@ from src.structures.queue import Queue
 from src.structures.thread import threatStructure
 from scipy import special
 import math
+import time
 
 
 class smoothingFilter(threatStructure):
@@ -61,6 +62,9 @@ class smoothingFilter(threatStructure):
 
                     # dequeue oldest point in filter window
                     window.dequeue()
+            else:
+                time.sleep(0.05)
+
 
     # determine filter type and compute coefficients
     def filterCoeffs(self, filterType, filterWindowSize):

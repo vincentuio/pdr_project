@@ -1,5 +1,6 @@
 from src.structures.queue import Queue
 from src.structures.thread import threatStructure
+import time
 
 GLOBAL_GRAVITY = 9.80655
 
@@ -69,3 +70,5 @@ class zerocrossing(threatStructure):
                     left.clear()
                     right.clear()
                     window.dequeue()
+            else:
+                time.sleep(0.05)

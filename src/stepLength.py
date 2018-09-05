@@ -1,4 +1,5 @@
 import numpy as np
+import time
 from src.structures.thread import threatStructure
 
 class stepLength(threatStructure):
@@ -68,3 +69,5 @@ class stepLength(threatStructure):
 
                 # append each datapoint to the outputQueue
                 self.outputQueue.enqueue(dtp)
+            else:
+                time.sleep(0.05)

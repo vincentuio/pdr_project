@@ -33,3 +33,6 @@ class threatStructure:
     # Check if the pre-processing stage is finished
     def isDone(self):
         return self.completed
+
+    def join(self):
+        self.thread.join()
